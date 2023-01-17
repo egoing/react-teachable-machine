@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import * as tmImage from '@teachablemachine/image';
-const Image = ({model_url, onPredict, preview=true, size=200}) => {
+const Image = ({model_url, onPredict, preview=true, size=200, info=true}) => {
     const [prediction, setPrediction] = useState(null);
     const previewRef = React.useRef();
     const requestRef = React.useRef()
@@ -15,7 +15,7 @@ const Image = ({model_url, onPredict, preview=true, size=200}) => {
         requestRef.current = window.requestAnimationFrame(loop); 
         if(preview){
             previewRef.current.replaceChildren(webcam.canvas);
-        } 
+        }  
         async function loop() {
             if(webcam === null) {
             }else {
@@ -33,24 +33,28 @@ const Image = ({model_url, onPredict, preview=true, size=200}) => {
     }
     useEffect(()=>{
         init();
-        return ()=>cancelAnimationFrame(requestRef.current);
+        return ()=>{
+            cancelAnimationFrame(requestRef.current);
+            console.log('previewRef.current', previewRef.current);
+            document.querySelector('#webcam-container').firstChild?.remove();
+        }
     }, [model_url])
     let label = [];
-    if(preview && prediction){
-        label = prediction.map((p,i)=><tr key={i}><td>{p.className}</td><td>{p.probability.toFixed(2)}</td></tr>);
-    }
-return(
-    <div>
-        <table id="label-container">
+    if(info && prediction){
+        label = <table id="label-container">
             <thead>
                 <tr>
                     <td>class name</td><td>probability</td>
                 </tr>
             </thead>
             <tbody>
-                {label}
+                {prediction.map((p,i)=><tr key={i}><td>{p.className}</td><td>{p.probability.toFixed(2)}</td></tr>)}
             </tbody>
         </table>
+    }
+return(
+    <div>
+        {label}
         <div id="webcam-container" ref={previewRef} />
     </div>
   );
