@@ -6,9 +6,10 @@ function App() {
       <ImageModel 
         preview={true}
         size={200}
-        info={true}
+        info={false}
+        interval={1000}
         onPredict={(prediction)=>{
-          // console.log(prediction);
+          console.log(prediction[0].probability);
         }} 
         model_url="https://teachablemachine.withgoogle.com/models/C4AwVVXHM/"></ImageModel>
     </div>

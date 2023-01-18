@@ -23,6 +23,7 @@ export default function App() {
       <ImageModel 
         preview={false}
         size={200}
+        interval={500}
         onPredict={(prediction)=>{
           setIsDay(prediction[0].probability > 0.5);
         }} 
@@ -48,4 +49,5 @@ export default function App() {
 |preview|boolean|Choose whether to show preview.|
 |size|int|Set preview width, height|
 |info|boolean|Choose whether to show class name and probability information|
-|onPredct|function|As an event for prediction, the event is triggered by requestAnimationFrame|
+|interval|int|1000 : 1s, null : requestAnimationFrame|
+|onPredct|function|As an event for prediction, the event is triggered by interval|

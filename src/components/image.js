@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import * as tmImage from '@teachablemachine/image';
-const Image = ({model_url, onPredict, preview=true, size=200, info=true}) => {
+const Image = ({model_url, onPredict, preview=true, size=200, info=true, interval=null}) => {
     const [prediction, setPrediction] = useState(null);
     const previewRef = React.useRef();
-    const requestRef = React.useRef()
+    const requestRef = React.useRef();
+    const intervalRef = React.useRef();
     async function init() {
         const modelURL = model_url + "model.json";
         const metadataURL = model_url + "metadata.json";
@@ -12,30 +13,43 @@ const Image = ({model_url, onPredict, preview=true, size=200, info=true}) => {
         const webcam = new tmImage.Webcam(size, size, flip); // width, height, flip
         await webcam.setup(); // request access to the webcam
         await webcam.play();
-        requestRef.current = window.requestAnimationFrame(loop); 
+        if(interval===null){
+            requestRef.current = window.requestAnimationFrame(loop); 
+        } else {
+            intervalRef.current = setTimeout(loop, interval);
+        }
         if(preview){
             previewRef.current.replaceChildren(webcam.canvas);
-        }  
+        }     
         async function loop() {
             if(webcam === null) {
             }else {
                 webcam.update(); // update the webcam frame
                 await predict();
             }
-            requestRef.current = window.requestAnimationFrame(loop);
+            if(interval === null){
+                requestRef.current = window.requestAnimationFrame(loop);
+            } else {
+                intervalRef.current = setTimeout(loop, interval);
+            }
         }
         async function predict() {
             // predict can take in an image, video or canvas html element
             const prediction = await model.predict(webcam.canvas);
             setPrediction(prediction);
-            onPredict(prediction);
+            if(onPredict){  
+                onPredict(prediction);
+            }
         }
     }
     useEffect(()=>{
         init();
         return ()=>{
-            cancelAnimationFrame(requestRef.current);
-            console.log('previewRef.current', previewRef.current);
+            if(interval === null){
+                cancelAnimationFrame(requestRef.current);
+            } else {
+                clearTimeout(intervalRef.current);
+            }
             document.querySelector('#webcam-container').firstChild?.remove();
         }
     }, [model_url])
